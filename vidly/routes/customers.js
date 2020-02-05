@@ -1,19 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Joi = require('@hapi/joi');
-const Customer = require('../models/customer');
-
-// input validation
-function validateCustomer(customer) {
-    const schema = Joi.object({
-        isGold: Joi.boolean(),
-        name: Joi.string().min(3).required(),
-        email: Joi.string(),
-        phone: Joi.string()
-    });
-
-    return schema.validate(customer);
-}
+const { Customer, validate } = require('../models/customer');
 
 // get all
 router.get('/', async (req, res) => {
@@ -30,6 +17,8 @@ router.get('/:id', async (req, res) => {
     try {
         const customer = await Customer.findById(req.params.id);
 
+        if (!customer) return res.status(404).json('The customer with the given ID was not found.');
+
         res.status(200).json(customer);
     } catch (err) {
         console.log(err.message);
@@ -40,7 +29,7 @@ router.get('/:id', async (req, res) => {
 // post
 router.post('/', async (req, res) => {
     // validate input
-    const { error } = validateCustomer(req.body);
+    const { error } = validate(req.body);
     if (error) return res.status(400).json('Bad request.');
 
     try {
@@ -63,7 +52,7 @@ router.post('/', async (req, res) => {
 // put
 router.put('/:id', async (req, res) => {
     // validate input
-    const { error } = validateCustomer(req.body);
+    const { error } = validate(req.body);
     if (error) return res.status(400).json('Bad request.');
     
     try {
@@ -76,6 +65,8 @@ router.put('/:id', async (req, res) => {
                 phone: req.body.phone
             }
         });
+
+        if (!customer) return res.status(404).json('The customer with the given ID was not found.');
 
         // return result to user
         res.status(200).json(customer);
@@ -93,6 +84,8 @@ router.delete('/:id', async (req, res) => {
     try {
         // find and delete course
         const customer = await Customer.findByIdAndDelete(req.params.id);
+
+        if (!customer) return res.status(404).json('The customer with the given ID was not found.');
 
         // return success to user
         res.status(200).json(customer);

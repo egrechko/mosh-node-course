@@ -1,17 +1,37 @@
 const mongoose = require('mongoose');
+const Joi = require('@hapi/joi');
 
 const customerSchema = new mongoose.Schema({
-    isGold: Boolean,
+    isGold: {
+        type: Boolean,
+        default: false
+    },
     name: {
         type: String,
         required: true,
-        min: 3,
-        max: 60
+        minlength: 3,
+        maxlength: 60
     },
-    email: String,
+    email: {
+        type: String,
+        required: true,
+    },
     phone: String
 });
 
+// input validation
+function validateCustomer(customer) {
+    const schema = Joi.object({
+        isGold: Joi.boolean(),
+        name: Joi.string().min(3).required(),
+        email: Joi.string().require(),
+        phone: Joi.string()
+    });
+
+    return schema.validate(customer);
+}
+
 const Customer = mongoose.model('Customer', customerSchema);
 
-module.exports = Customer;
+exports.Customer = Customer;
+exports.validate = validateCustomer;
