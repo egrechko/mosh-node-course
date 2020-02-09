@@ -24,7 +24,7 @@ function validateCustomer(customer) {
     const schema = Joi.object({
         isGold: Joi.boolean(),
         name: Joi.string().min(3).required(),
-        email: Joi.string().require(),
+        email: Joi.string().required(),
         phone: Joi.string()
     });
 
