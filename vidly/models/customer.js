@@ -16,7 +16,10 @@ const customerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    phone: String
+    phone: {
+        type: String,
+        required: true
+    }
 });
 
 // input validation
@@ -25,7 +28,7 @@ function validateCustomer(customer) {
         isGold: Joi.boolean(),
         name: Joi.string().min(3).required(),
         email: Joi.string().required(),
-        phone: Joi.string()
+        phone: Joi.string().required()
     });
 
     return schema.validate(customer);
