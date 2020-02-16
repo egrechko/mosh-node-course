@@ -1,3 +1,4 @@
+const auth = require('../middleware/auth');
 const express = require('express');
 const router = express.Router();
 const { Customer, validate } = require('../models/customer');
@@ -27,7 +28,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // post
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     // validate input
     const { error } = validate(req.body);
     if (error) return res.status(400).json('Bad request.');
@@ -50,7 +51,7 @@ router.post('/', async (req, res) => {
 });
 
 // put
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     // validate input
     const { error } = validate(req.body);
     if (error) return res.status(400).json('Bad request.');
@@ -80,7 +81,7 @@ router.put('/:id', async (req, res) => {
 
 // delete
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         // find and delete course
         const customer = await Customer.findByIdAndDelete(req.params.id);

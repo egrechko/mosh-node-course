@@ -1,3 +1,4 @@
+const auth = require('../middleware/auth');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -35,43 +36,59 @@ router.get('/:id', async (req, res) => {
 });
 
 // post
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     // validate input
     const { error } = validate(req.body);
     if (error) return res.status(400).json('Bad request');
 
-    // find customer
-    const customer = await Customer.findById(req.body.customerId);
-    if (!customer) return res.status(400).json('Invalid customer');
+    // const movieId = req.body.movieId;
+    // if (!mongoose.Types.ObjectId.isValid(movieId)) {
+    //     console.log('Invalid movie id provided.');
+    //     return res.status(400).json('Bad request.');
+    // }
 
-    // find movie
-    const movie = await Movie.findById(req.body.movieId);
-    if (!movie) return res.status(400).json('Invalid movie');
+    // const customerId = req.body.customerId;
+    // if (!mongoose.Types.ObjectId.isValid(customerId)) {
+    //     console.log('Invalid customer id provided');
+    //     return res.status(400).json('Bad request.');
+    // }
 
-    if (movie.numberInStock === 0) return res.status(400).json('There are no more movies in stock');
+    try {
+        // find customer
+        const customer = await Customer.findById(customerId);
+        if (!customer) return res.status(400).json('Invalid customer');
 
-    // create rental
-    let rental = await Rental.create({
-        customer: {
-            _id: customer._id,
-            name: customer.name,
-            phone: customer.phone
-        },
-        movie: {
-            _id: movie._id,
-            title: movie.title,
-            dailyRentalRate: movie.dailyRentalRate
-        }
-    });
+        // find movie
+        const movie = await Movie.findById(movieId);
+        if (!movie) return res.status(400).json('Invalid movie');
 
-    rental = await rental.save();
+        if (movie.numberInStock === 0) return res.status(400).json('There are no more movies in stock');
 
-    movie.numberInStock--;
-    movie.save();
+        // create rental
+        let rental = await Rental.create({
+            customer: {
+                _id: customer._id,
+                name: customer.name,
+                phone: customer.phone
+            },
+            movie: {
+                _id: movie._id,
+                title: movie.title,
+                dailyRentalRate: movie.dailyRentalRate
+            }
+        });
 
-    res.status(200).json(rental);
+        rental = await rental.save();
 
-    // handle errors
+        movie.numberInStock--;
+        movie.save();
+
+        res.status(200).json(rental);
+    } catch (err) {
+        // handle errors
+        console.log("Error: ", err.message);
+        res.status(500).json('Internal server error.');
+    }
 });
 
 // post - my version
